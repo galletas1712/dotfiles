@@ -22,6 +22,7 @@ const NU_PLUGIN_DIRS = [
 ]
 
 $env.config.buffer_editor = "vim"
+$env.EDITOR = "vim"
 
 use std/util "path add"
 path add "~/.docker/bin"
