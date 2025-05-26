@@ -1,0 +1,12 @@
+[preview]
+max_width=2048
+max_height=2048
+image_quality=60
+wrap="yes"
+tab_size=2
+
+[manager]
+ratio          = [ 1, 2, 2 ]
+show_hidden = true
+sort_by = "mtime"
+sort_reverse = true
