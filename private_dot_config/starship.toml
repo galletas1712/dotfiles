@@ -1,0 +1,13 @@
+command_timeout = 750
+
+# A minimal left prompt
+format = """$character$directory"""
+
+# move the rest of the prompt to the right
+right_format = """$all"""
+
+[conda]
+format = '[$symbol$environment]($style)'
+
+[python]
+format = '[${symbol}${pyenv_prefix}(${version} )(\($virtualenv\) )]($style)'
