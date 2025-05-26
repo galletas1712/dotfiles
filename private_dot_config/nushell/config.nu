@@ -16,6 +16,10 @@
 #
 # You can remove these comments if you want or leave
 # them for future reference.
+const NU_PLUGIN_DIRS = [
+  ($nu.current-exe | path dirname)
+  ...$NU_PLUGIN_DIRS
+]
 
 $env.config.buffer_editor = "vim"
 
