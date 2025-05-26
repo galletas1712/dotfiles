@@ -1,0 +1,23 @@
+packages:
+  darwin:
+    brews:
+      - chezmoi
+      - uv
+      - yarn
+      - node
+      - gcc
+      - gh
+      - yazi
+      - ripgrep
+      - fzf
+      - jq
+      - neovim
+      - mosh
+      - flyctl
+    casks:
+      - 'ghostty'
+      - 'font-fira-code-nerd-font'
+      - 'font-fira-mono-nerd-font'
+      - 'font-hack-nerd-font'
+      - 'font-hasklug-nerd-font'
+      - 'font-jetbrains-mono-nerd-font'
