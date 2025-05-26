@@ -16,6 +16,9 @@ packages:
       - flyctl
     casks:
       - 'ghostty'
+      - 'xquartz'
+      - '1password'
+      - 'dropbox'
       - 'font-fira-code-nerd-font'
       - 'font-fira-mono-nerd-font'
       - 'font-hack-nerd-font'
