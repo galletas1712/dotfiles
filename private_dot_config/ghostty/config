@@ -1,2 +1,1 @@
-theme = dark:catppuccin-frappe,light:catppuccin-latte
-command = env XDG_CONFIG_HOME="$HOME/.config" /opt/homebrew/bin/nu
+font-family = "FiraCode Nerd Font Mono"
