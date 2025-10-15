@@ -1,7 +1,7 @@
 command_timeout = 750
 
 # A minimal left prompt
-format = """$character$directory"""
+format = """$username$hostname $character$directory"""
 
 # move the rest of the prompt to the right
 right_format = """$all"""
@@ -11,3 +11,16 @@ format = '[$symbol$environment]($style)'
 
 [python]
 format = '[${symbol}${pyenv_prefix}(${version} )(\($virtualenv\) )]($style)'
+
+[username]
+format = "[$user]($style)"
+style_user = "bold green"
+style_root = "bold red"
+show_always = true
+
+[hostname]
+format = "[@$hostname]($style)"
+style = "bold yellow"
+
+[directory]
+truncate_to_repo = true
