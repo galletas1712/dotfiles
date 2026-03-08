@@ -1,7 +1,7 @@
 command_timeout = 750
 
 # A minimal left prompt
-format = """$username$hostname $character$directory"""
+format = """$env_var$username$hostname $character$directory"""
 
 # move the rest of the prompt to the right
 right_format = """$all"""
@@ -21,6 +21,10 @@ show_always = true
 [hostname]
 format = "[@$hostname]($style)"
 style = "bold yellow"
+
+[env_var.ZMX_SESSION]
+format = "[$env_value]($style) "
+style = "bold cyan"
 
 [directory]
 truncate_to_repo = true
