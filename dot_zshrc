@@ -1,18 +1,14 @@
 export EDITOR=vim
 
-# Add entries to PATH
+# Nix (must come first so nix-managed tools are on PATH)
+if [ -e "$HOME/.nix-profile/etc/profile.d/nix.sh" ]; then
+  . "$HOME/.nix-profile/etc/profile.d/nix.sh"
+fi
+
+# Self-managed tools
+export PATH="$HOME/.local/bin:$PATH"
 export PATH="$HOME/snap/bin:$PATH"
 export PATH="$HOME/.docker/bin:$PATH"
-export PATH="$HOME/.local/bin:$PATH"
-export PATH="/opt/homebrew/bin:$PATH"
-
-export MISE_RUSTUP_HOME="$HOME/.local/share/mise/rustup"
-export MISE_CARGO_HOME="$HOME/.local/share/mise/cargo"
-
-# Activate mise before tools referenced later in this file.
-if [ -x "$HOME/.local/bin/mise" ]; then
-  eval "$("$HOME/.local/bin/mise" activate zsh)"
-fi
 
 # Starship
 eval "$(starship init zsh)"
