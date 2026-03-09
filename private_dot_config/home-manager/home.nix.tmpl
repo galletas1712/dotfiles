@@ -37,6 +37,9 @@
     tmux
     htop
     vim
+{{- if eq .chezmoi.os "darwin" }}
+    ghostty
+{{- end }}
 
     # Kubernetes
     kubectl
@@ -49,8 +52,10 @@
 
     # Debugging
     gdb
+{{- if eq .chezmoi.os "linux" }}
     strace
     criu
+{{- end }}
     py-spy
 
     # Networking

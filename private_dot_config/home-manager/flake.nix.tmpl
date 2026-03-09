@@ -2,30 +2,67 @@
   description = "Home Manager configuration of {{ .chezmoi.username }}";
 
   inputs = {
-    # Specify the source of Home Manager and Nixpkgs.
     nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
     home-manager = {
       url = "github:nix-community/home-manager";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+    claude-code-nix = {
+      url = "github:sadjow/claude-code-nix";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+    codex = {
+      url = "github:galletas1712/codex/dev";
+    };
+{{- if eq .chezmoi.os "linux" }}
+    zmx = {
+      url = "github:neurosnap/zmx";
+    };
+    cuda-checkpoint-src = {
+      url = "github:NVIDIA/cuda-checkpoint";
+      flake = false;
+    };
+{{- end }}
   };
 
   outputs =
-    { nixpkgs, home-manager, ... }:
+    { nixpkgs, home-manager, ... }@inputs:
     let
-      system = "x86_64-linux";
+      system = "{{ if eq .chezmoi.arch "amd64" }}x86_64{{ else }}aarch64{{ end }}-{{ .chezmoi.os }}";
       pkgs = nixpkgs.legacyPackages.${system};
     in
     {
       homeConfigurations."{{ .chezmoi.username }}" = home-manager.lib.homeManagerConfiguration {
         inherit pkgs;
-
-        # Specify your home configuration modules here, for example,
-        # the path to your home.nix.
-        modules = [ ./home.nix ];
-
-        # Optionally use extraSpecialArgs
-        # to pass through arguments to home.nix
+        modules = [
+          ./home.nix
+          # Flake-sourced packages (cross-platform)
+          ({ ... }: {
+            home.packages = [
+              inputs.claude-code-nix.packages.${system}.default
+              inputs.codex.packages.${system}.default
+            ];
+          })
+{{- if eq .chezmoi.os "linux" }}
+          # Linux-only: zmx from tip of main, cuda-checkpoint prebuilt binary
+          ({ pkgs, ... }: {
+            home.packages = [
+              inputs.zmx.packages.${system}.default
+              (pkgs.stdenv.mkDerivation {
+                pname = "cuda-checkpoint";
+                version = "unstable";
+                src = inputs.cuda-checkpoint-src;
+                dontBuild = true;
+                installPhase = ''
+                  mkdir -p $out/bin
+                  cp bin/x86_64_Linux/cuda-checkpoint $out/bin/
+                  chmod +x $out/bin/cuda-checkpoint
+                '';
+              })
+            ];
+          })
+{{- end }}
+        ];
       };
     };
 }
