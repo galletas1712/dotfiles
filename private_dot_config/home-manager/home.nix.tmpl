@@ -1,0 +1,118 @@
+{ config, pkgs, lib, ... }:
+
+{
+  home.username = "{{ .chezmoi.username }}";
+  home.homeDirectory = "{{ .chezmoi.homeDir }}";
+  home.stateVersion = "25.11";
+
+  home.packages = with pkgs; [
+    # Languages & runtimes
+    nodejs
+    go
+    gopls
+    zig
+    bun
+    uv
+    rustup
+    python3
+
+    # Build tools
+    gcc
+    # Lower priority to avoid bin/cc conflict with gcc
+    (lib.setPrio 20 clang)
+    llvmPackages.llvm
+    gnumake
+    cmake
+    ninja
+    ccache
+    pkg-config
+    protobuf
+
+    # CLI tools
+    just
+    ripgrep
+    jq
+    gh
+    chezmoi
+    tmux
+    htop
+    vim
+
+    # Kubernetes
+    kubectl
+    k9s
+    kubernetes-helm
+    kind
+    minikube
+    kubebuilder
+    kubelogin
+
+    # Debugging
+    gdb
+    strace
+    criu
+    py-spy
+
+    # Networking
+    nmap
+    tcpdump
+    socat
+    mosh
+    eternal-terminal
+
+    # Servers
+    etcd
+    nats-server
+  ];
+
+  programs.starship = {
+    enable = true;
+    settings = {
+      command_timeout = 750;
+      format = "$env_var$username$hostname $character$directory";
+      right_format = "$all";
+      conda.format = "[$symbol$environment]($style)";
+      python.format = "[\${symbol}\${pyenv_prefix}(\${version} )(\\($virtualenv\\) )]($style)";
+      username = {
+        format = "[$user]($style)";
+        style_user = "bold green";
+        style_root = "bold red";
+        show_always = true;
+      };
+      hostname = {
+        format = "[@$hostname]($style)";
+        style = "bold yellow";
+      };
+      env_var.ZMX_SESSION = {
+        format = "[$env_value]($style) ";
+        style = "bold cyan";
+      };
+      directory.truncate_to_repo = true;
+    };
+  };
+
+  programs.yazi = {
+    enable = true;
+    settings = {
+      preview = {
+        max_width = 2048;
+        max_height = 2048;
+        image_quality = 60;
+        wrap = "yes";
+        tab_size = 2;
+      };
+      manager = {
+        ratio = [ 1 2 2 ];
+        show_hidden = true;
+        sort_by = "mtime";
+        sort_reverse = true;
+      };
+    };
+  };
+
+  home.sessionVariables = {
+    EDITOR = "vim";
+  };
+
+  programs.home-manager.enable = true;
+}

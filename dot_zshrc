@@ -18,3 +18,7 @@ eval "$(zmx completions zsh)"
 alias za="zmx attach"
 alias zl="zmx list"
 alias zk="zmx kill"
+
+# nix home-manager
+alias nu="nix flake update --flake ~/.config/home-manager && home-manager switch --flake ~/.config/home-manager"
+alias ns="home-manager switch --flake ~/.config/home-manager"
