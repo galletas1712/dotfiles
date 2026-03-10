@@ -1,9 +1,9 @@
-{ config, pkgs, lib, inputs, ... }:
+{ config, pkgs, lib, inputs, username, ... }:
 
 {
   imports = [ "${inputs.agent-config}/module.nix" ];
-  home.username = "{{ .chezmoi.username }}";
-  home.homeDirectory = "{{ .chezmoi.homeDir }}";
+  home.username = username;
+  home.homeDirectory = "/home/${username}";
   home.stateVersion = "25.11";
 
   home.packages = with pkgs; [
