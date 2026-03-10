@@ -19,11 +19,13 @@ export PATH="$HOME/.docker/bin:$PATH"
 # Starship
 eval "$(starship init zsh)"
 
+{{- if eq .chezmoi.os "linux" }}
 # zmx
 eval "$(zmx completions zsh)"
 alias za="zmx attach"
 alias zl="zmx list"
 alias zk="zmx kill"
+{{- end }}
 
 # nix
 {{- if eq .chezmoi.os "darwin" }}
