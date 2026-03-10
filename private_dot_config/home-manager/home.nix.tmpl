@@ -120,10 +120,12 @@
 
   programs.git = {
     enable = true;
-    userName = "Schwinn Saereesitthipitak";
-    userEmail = "schwinns@nvidia.com";
     signing.signByDefault = true;
-    extraConfig.init.defaultBranch = "main";
+    settings = {
+      user.name = "Schwinn Saereesitthipitak";
+      user.email = "schwinns@nvidia.com";
+      init.defaultBranch = "main";
+    };
     includes = [{
       path = toString (pkgs.writeText "gh-credential.gitconfig" ''
         [credential "https://github.com"]
