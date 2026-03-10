@@ -1,15 +1,15 @@
-autoload -Uz compinit
-compinit
-source <(kubectl completion zsh)
-
-export EDITOR=vim
-
 # Nix (must come first so nix-managed tools are on PATH)
 if [ -e "/nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh" ]; then
   . "/nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh"
 elif [ -e "$HOME/.nix-profile/etc/profile.d/nix.sh" ]; then
   . "$HOME/.nix-profile/etc/profile.d/nix.sh"
 fi
+
+export EDITOR=vim
+
+autoload -Uz compinit
+compinit
+source <(kubectl completion zsh)
 
 # Self-managed tools
 export PATH="$HOME/.local/bin:$PATH"
