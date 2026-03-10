@@ -118,6 +118,24 @@
     };
   };
 
+  programs.git = {
+    enable = true;
+    userName = "Schwinn Saereesitthipitak";
+    userEmail = "schwinns@nvidia.com";
+    signing.signByDefault = true;
+    extraConfig.init.defaultBranch = "main";
+    includes = [{
+      path = toString (pkgs.writeText "gh-credential.gitconfig" ''
+        [credential "https://github.com"]
+        	helper =
+        	helper = !${pkgs.gh}/bin/gh auth git-credential
+        [credential "https://gist.github.com"]
+        	helper =
+        	helper = !${pkgs.gh}/bin/gh auth git-credential
+      '');
+    }];
+  };
+
   home.sessionVariables = {
     EDITOR = "vim";
   };
