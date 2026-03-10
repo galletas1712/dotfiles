@@ -4,7 +4,6 @@
   home.username = "{{ .chezmoi.username }}";
   home.homeDirectory = "{{ .chezmoi.homeDir }}";
   home.stateVersion = "25.11";
-  home.backupFileExtension = "bak";
 
   home.packages = with pkgs; [
     # Languages & runtimes
@@ -39,8 +38,10 @@
     htop
     vim
     neovim
+    fzf
 {{- if eq .chezmoi.os "darwin" }}
-    ghostty
+    ffmpeg
+    yt-dlp
 {{- end }}
 
     # Kubernetes

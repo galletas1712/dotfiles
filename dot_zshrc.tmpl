@@ -25,6 +25,11 @@ alias za="zmx attach"
 alias zl="zmx list"
 alias zk="zmx kill"
 
-# nix home-manager
-alias nu="nix flake update --flake ~/.config/home-manager && home-manager switch --flake ~/.config/home-manager"
-alias ns="home-manager switch --flake ~/.config/home-manager"
+# nix
+{{- if eq .chezmoi.os "darwin" }}
+alias nu="nix flake update --flake ~/.config/home-manager && darwin-rebuild switch --flake ~/.config/home-manager#default"
+alias ns="darwin-rebuild switch --flake ~/.config/home-manager#default"
+{{- else }}
+alias nu="nix flake update --flake ~/.config/home-manager && home-manager switch --flake ~/.config/home-manager#default"
+alias ns="home-manager switch --flake ~/.config/home-manager#default"
+{{- end }}

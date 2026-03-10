@@ -1,0 +1,19 @@
+{ pkgs, ... }:
+
+{
+  system.primaryUser = "{{ .chezmoi.username }}";
+  nix.settings.experimental-features = [ "nix-command" "flakes" ];
+
+  homebrew = {
+    enable = true;
+    casks = [
+      "ghostty"
+      "karabiner-elements"
+      "tailscale-app"
+      "spotify"
+      "font-jetbrains-mono-nerd-font"
+    ];
+  };
+
+  system.stateVersion = 5;
+}

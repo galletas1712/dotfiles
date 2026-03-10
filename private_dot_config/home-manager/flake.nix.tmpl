@@ -1,5 +1,5 @@
 {
-  description = "Home Manager configuration of {{ .chezmoi.username }}";
+  description = "System configuration of {{ .chezmoi.username }}";
 
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
@@ -7,6 +7,12 @@
       url = "github:nix-community/home-manager";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+{{- if eq .chezmoi.os "darwin" }}
+    nix-darwin = {
+      url = "github:LnL7/nix-darwin/master";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+{{- end }}
     claude-code-nix = {
       url = "github:sadjow/claude-code-nix";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -29,22 +35,36 @@
     { nixpkgs, home-manager, ... }@inputs:
     let
       system = "{{ if eq .chezmoi.arch "amd64" }}x86_64{{ else }}aarch64{{ end }}-{{ .chezmoi.os }}";
-      pkgs = nixpkgs.legacyPackages.${system};
+      extraPackagesModule = { ... }: {
+        home.packages = [
+          inputs.claude-code-nix.packages.${system}.default
+          inputs.codex.packages.${system}.default
+        ];
+      };
     in
     {
-      homeConfigurations."{{ .chezmoi.username }}" = home-manager.lib.homeManagerConfiguration {
-        inherit pkgs;
+{{- if eq .chezmoi.os "darwin" }}
+      darwinConfigurations."default" = inputs.nix-darwin.lib.darwinSystem {
+        modules = [
+          ./darwin.nix
+          inputs.home-manager.darwinModules.home-manager
+          {
+            nixpkgs.hostPlatform = system;
+            home-manager.useGlobalPkgs = true;
+            home-manager.useUserPackages = true;
+            home-manager.users."{{ .chezmoi.username }}" = {
+              imports = [ ./home.nix extraPackagesModule ];
+              home.homeDirectory = nixpkgs.lib.mkForce "{{ .chezmoi.homeDir }}";
+            };
+          }
+        ];
+      };
+{{- else }}
+      homeConfigurations."default" = home-manager.lib.homeManagerConfiguration {
+        pkgs = nixpkgs.legacyPackages.${system};
         modules = [
           ./home.nix
-          # Flake-sourced packages (cross-platform)
-          ({ ... }: {
-            home.packages = [
-              inputs.claude-code-nix.packages.${system}.default
-              inputs.codex.packages.${system}.default
-            ];
-          })
-{{- if eq .chezmoi.os "linux" }}
-          # Linux-only: zmx from tip of main, cuda-checkpoint prebuilt binary
+          extraPackagesModule
           ({ pkgs, ... }: {
             home.packages = [
               inputs.zmx.packages.${system}.default
@@ -61,8 +81,8 @@
               })
             ];
           })
-{{- end }}
         ];
       };
+{{- end }}
     };
 }
