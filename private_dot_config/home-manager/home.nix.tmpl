@@ -1,6 +1,7 @@
-{ config, pkgs, lib, ... }:
+{ config, pkgs, lib, inputs, ... }:
 
 {
+  imports = [ "${inputs.agent-config}/module.nix" ];
   home.username = "{{ .chezmoi.username }}";
   home.homeDirectory = "{{ .chezmoi.homeDir }}";
   home.stateVersion = "25.11";
@@ -120,6 +121,8 @@
   home.sessionVariables = {
     EDITOR = "vim";
   };
+
+  agentConfig.enable = true;
 
   programs.home-manager.enable = true;
 }
