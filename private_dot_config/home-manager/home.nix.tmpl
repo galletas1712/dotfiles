@@ -4,6 +4,7 @@
   home.username = "{{ .chezmoi.username }}";
   home.homeDirectory = "{{ .chezmoi.homeDir }}";
   home.stateVersion = "25.11";
+  home.backupFileExtension = "bak";
 
   home.packages = with pkgs; [
     # Languages & runtimes
@@ -37,6 +38,7 @@
     tmux
     htop
     vim
+    neovim
 {{- if eq .chezmoi.os "darwin" }}
     ghostty
 {{- end }}
@@ -50,13 +52,12 @@
     kubebuilder
     kubelogin
 
-    # Debugging
-    gdb
 {{- if eq .chezmoi.os "linux" }}
+    # Debugging (linux-only)
+    gdb
     strace
     criu
 {{- end }}
-    py-spy
 
     # Networking
     nmap

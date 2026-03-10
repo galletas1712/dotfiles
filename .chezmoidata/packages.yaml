@@ -2,7 +2,6 @@ packages:
   darwin:
     brews:
       - chezmoi
-      - nushell
       - uv
       - yarn
       - node
@@ -12,9 +11,7 @@ packages:
       - ripgrep
       - fzf
       - jq
-      - neovim
       - mosh
-      - flyctl
       - starship
     casks:
       - 'ghostty'
