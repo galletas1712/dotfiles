@@ -1,7 +1,6 @@
 { config, pkgs, lib, inputs, username, ... }:
 
 {
-  imports = [ "${inputs.agent-config}/module.nix" ];
   home.username = username;
   home.homeDirectory = "/home/${username}";
   home.stateVersion = "25.11";
@@ -144,8 +143,6 @@
   home.sessionVariables = {
     EDITOR = "vim";
   };
-
-  agentConfig.enable = true;
 
   programs.home-manager.enable = true;
 }

@@ -43,11 +43,7 @@
       flake = false;
     };
 {{- end }}
-    agent-config = {
-      url = "path:{{ .chezmoi.homeDir }}/agent-config";
-      flake = false;
-    };
-  };
+};
 
   outputs =
     { nixpkgs, home-manager, ... }@inputs:
