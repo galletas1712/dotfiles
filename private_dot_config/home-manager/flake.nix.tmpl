@@ -17,16 +17,32 @@
       url = "github:sadjow/claude-code-nix";
       inputs.nixpkgs.follows = "nixpkgs";
     };
-    codex = {
-      url = "github:galletas1712/codex/dev";
-      inputs.nixpkgs.follows = "nixpkgs";
+    nix-openclaw = {
+      url = "github:openclaw/nix-openclaw";
     };
 {{- if eq .chezmoi.os "linux" }}
+    codex-src = {
+      url = "https://github.com/openai/codex/releases/download/rust-v0.117.0/codex-x86_64-unknown-linux-gnu.tar.gz";
+      flake = false;
+    };
+    brev-src = {
+      url = "https://github.com/brevdev/brev-cli/releases/download/v0.6.322/brev-cli_0.6.322_linux_amd64.tar.gz";
+      flake = false;
+    };
     zmx = {
       url = "github:neurosnap/zmx";
     };
     cuda-checkpoint-src = {
       url = "github:NVIDIA/cuda-checkpoint";
+      flake = false;
+    };
+{{- else }}
+    codex-src = {
+      url = "https://github.com/openai/codex/releases/download/rust-v0.117.0/codex-aarch64-apple-darwin.tar.gz";
+      flake = false;
+    };
+    brev-src = {
+      url = "https://github.com/brevdev/brev-cli/releases/download/v0.6.322/brev-cli_0.6.322_darwin_arm64.tar.gz";
       flake = false;
     };
 {{- end }}
@@ -41,10 +57,32 @@
     let
       system = "{{ if eq .chezmoi.arch "amd64" }}x86_64{{ else }}aarch64{{ end }}-{{ .chezmoi.os }}";
       username = "{{ .chezmoi.username }}";
-      extraPackagesModule = { ... }: {
+      codexBin = {{ if eq .chezmoi.os "linux" }}"codex-x86_64-unknown-linux-gnu"{{ else }}"codex-aarch64-apple-darwin"{{ end }};
+      extraPackagesModule = { pkgs, ... }: {
         home.packages = [
           inputs.claude-code-nix.packages.${system}.default
-          inputs.codex.packages.${system}.default
+          (pkgs.stdenv.mkDerivation {
+            pname = "codex";
+            version = "0.117.0";
+            src = inputs.codex-src;
+            dontBuild = true;
+            installPhase = ''
+              mkdir -p $out/bin
+              cp ${codexBin} $out/bin/codex
+              chmod +x $out/bin/codex
+            '';
+          })
+          (pkgs.stdenv.mkDerivation {
+            pname = "brev";
+            version = "0.6.322";
+            src = inputs.brev-src;
+            dontBuild = true;
+            installPhase = ''
+              mkdir -p $out/bin
+              cp brev $out/bin/
+              chmod +x $out/bin/brev
+            '';
+          })
         ];
       };
     in
@@ -60,7 +98,38 @@
             home-manager.useUserPackages = true;
             home-manager.extraSpecialArgs = { inherit inputs username; };
             home-manager.users."{{ .chezmoi.username }}" = {
-              imports = [ ./home.nix extraPackagesModule ];
+              imports = [
+                ./home.nix
+                extraPackagesModule
+                inputs.nix-openclaw.homeManagerModules.openclaw
+                ({ pkgs, ... }: {
+                  nixpkgs.overlays = [
+                    inputs.nix-openclaw.overlays.default
+                    (final: prev: {
+                      openclaw-gateway = prev.openclaw-gateway.overrideAttrs (old: {
+                        dontFixup = false;
+                        dontStrip = true;
+                        dontPatchShebangs = true;
+                        dontPatchELF = true;
+                        postFixup = ''
+                          for manifest in "$out/lib/openclaw/extensions"/*/openclaw.plugin.json; do
+                            dir="$(dirname "$manifest")"
+                            name="$(basename "$dir")"
+                            target="$out/lib/openclaw/dist/extensions/$name"
+                            if [ -d "$target" ]; then
+                              cp "$manifest" "$target/"
+                            fi
+                          done
+                        '';
+                      });
+                    })
+                  ];
+                  programs.openclaw = {
+                    enable = true;
+                    package = pkgs.openclaw-gateway;
+                  };
+                })
+              ];
               home.homeDirectory = nixpkgs.lib.mkForce "{{ .chezmoi.homeDir }}";
             };
           }
@@ -73,6 +142,34 @@
         modules = [
           ./home.nix
           extraPackagesModule
+          inputs.nix-openclaw.homeManagerModules.openclaw
+          ({ pkgs, ... }: {
+            nixpkgs.overlays = [
+              inputs.nix-openclaw.overlays.default
+              (final: prev: {
+                openclaw-gateway = prev.openclaw-gateway.overrideAttrs (old: {
+                  dontFixup = false;
+                  dontStrip = true;
+                  dontPatchShebangs = true;
+                  dontPatchELF = true;
+                  postFixup = ''
+                    for manifest in "$out/lib/openclaw/extensions"/*/openclaw.plugin.json; do
+                      dir="$(dirname "$manifest")"
+                      name="$(basename "$dir")"
+                      target="$out/lib/openclaw/dist/extensions/$name"
+                      if [ -d "$target" ]; then
+                        cp "$manifest" "$target/"
+                      fi
+                    done
+                  '';
+                });
+              })
+            ];
+            programs.openclaw = {
+              enable = true;
+              package = pkgs.openclaw-gateway;
+            };
+          })
           ({ pkgs, ... }: {
             home.packages = [
               inputs.zmx.packages.${system}.default
