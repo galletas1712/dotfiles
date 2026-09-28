@@ -23,6 +23,11 @@ brew "mosh"
 brew "et"
 brew "gnupg"
 
+# A Linux host agent launcher uses npm/npx outside the development container.
+if OS.linux?
+  brew "node"
+end
+
 # Existing macOS desktop apps
 if OS.mac?
   cask "ghostty"
