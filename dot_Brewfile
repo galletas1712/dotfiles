@@ -1,0 +1,32 @@
+# Shared user tools. Run by chezmoi after it writes ~/.Brewfile.
+# Homebrew Bundle upgrades installed entries on each run.
+
+tap "neurosnap/tap", trusted: { formula: "zmx" }
+
+# Host shell, file navigation, and agents
+brew "ripgrep"
+brew "jq"
+brew "gh"
+brew "chezmoi"
+brew "tmux"
+brew "htop"
+brew "neovim"
+brew "fzf"
+brew "starship"
+brew "yazi"
+brew "neurosnap/tap/zmx", trusted: true
+cask "codex"
+cask "claude-code"
+
+# Remote access and Git signing on the host
+brew "mosh"
+brew "et"
+brew "gnupg"
+
+# Existing macOS desktop apps
+if OS.mac?
+  cask "ghostty"
+  cask "karabiner-elements"
+  cask "tailscale-app"
+  cask "spotify"
+end

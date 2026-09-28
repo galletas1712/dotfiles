@@ -1,0 +1,26 @@
+command_timeout = 750
+format = "$env_var$username$hostname $character$directory"
+right_format = "$all"
+
+[conda]
+format = "[$symbol$environment]($style)"
+
+[directory]
+truncate_to_repo = true
+
+[env_var.ZMX_SESSION]
+format = "[$env_value]($style) "
+style = "bold cyan"
+
+[hostname]
+format = "[@$hostname]($style)"
+style = "bold yellow"
+
+[python]
+format = '[${symbol}${pyenv_prefix}(${version} )(\($virtualenv\) )]($style)'
+
+[username]
+format = "[$user]($style)"
+show_always = true
+style_root = "bold red"
+style_user = "bold green"
