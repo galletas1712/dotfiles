@@ -2,10 +2,24 @@
 set -euo pipefail
 
 enable_docker=false
-if [[ ${1:-} == --docker ]]; then
-  enable_docker=true
-  shift
-fi
+host_mounts=()
+while [[ $# -gt 0 ]]; do
+  case $1 in
+    --docker)
+      enable_docker=true
+      shift
+      ;;
+    --mount-host)
+      if [[ $# -lt 2 || $2 != /* || ! -e $2 ]]; then
+        echo '--mount-host needs an existing absolute path.' >&2
+        exit 2
+      fi
+      host_mounts+=("$2")
+      shift 2
+      ;;
+    *) break ;;
+  esac
+done
 
 host_home=$HOME
 host_workspace="$host_home/workspace"
@@ -57,6 +71,9 @@ run_args=(
   --mount "type=bind,source=$host_workspace,target=$container_home"
   --workdir "$workspace"
 )
+for host_mount in "${host_mounts[@]}"; do
+  run_args+=(--mount "type=bind,source=$host_mount,target=$host_mount")
+done
 if [[ $workspace != "$host_workspace" && $workspace != "$host_workspace/"* ]]; then
   run_args+=(--mount "type=bind,source=$workspace,target=$workspace")
 fi
