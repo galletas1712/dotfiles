@@ -37,7 +37,7 @@ if [[ $workspace_arg == -- ]]; then
 elif [[ $# -gt 0 ]]; then
   shift
 fi
-workspace=$(cd "$workspace_arg" && pwd -P)
+workspace=$(cd "$workspace_arg" && pwd -L)
 if [[ ${1:-} == -- ]]; then
   shift
 fi
