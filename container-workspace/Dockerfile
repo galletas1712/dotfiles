@@ -58,6 +58,14 @@ RUN npm install --global --no-audit --no-fund \
     npm install --global --no-audit --no-fund --ignore-scripts \
       @earendil-works/pi-coding-agent
 
+# Keep the container's Linux Cursor executable separate from shared home files.
+RUN mkdir -p /opt/cursor-agent-home && \
+    curl -fsSL https://cursor.com/install -o /tmp/install-cursor.sh && \
+    HOME=/opt/cursor-agent-home bash /tmp/install-cursor.sh && \
+    ln -s /opt/cursor-agent-home/.local/bin/cursor-agent /usr/local/bin/cursor-agent && \
+    ln -s /opt/cursor-agent-home/.local/bin/agent /usr/local/bin/agent && \
+    rm /tmp/install-cursor.sh
+
 WORKDIR /workspace
 COPY --chmod=0755 entrypoint.sh /usr/local/bin/dev-entrypoint
 ENTRYPOINT ["dev-entrypoint"]

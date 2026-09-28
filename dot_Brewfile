@@ -15,8 +15,7 @@ brew "fzf"
 brew "starship"
 brew "yazi"
 brew "neurosnap/tap/zmx", trusted: true
-cask "codex"
-cask "claude-code"
+cask "claude-code@latest"
 
 # Remote access and Git signing on the host
 brew "mosh"

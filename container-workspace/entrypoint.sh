@@ -22,7 +22,7 @@ if [ "$(id -u)" -eq 0 ]; then
   exec gosu "$HOST_USER" "$0" "$@"
 fi
 
-export PATH="$HOME/.local/bin:$PATH"
+export PATH="/usr/local/bin:$HOME/.local/bin:$PATH"
 
 if [ -n "${DEV_GIT_NAME:-}" ] && ! git config --global user.name >/dev/null 2>&1; then
   git config --global user.name "$DEV_GIT_NAME"
@@ -33,10 +33,6 @@ fi
 if [ -d "$HOME/.config/gh" ]; then
   git config --global credential.https://github.com.helper '!gh auth git-credential'
   git config --global credential.https://gist.github.com.helper '!gh auth git-credential'
-fi
-
-if ! command -v cursor-agent >/dev/null 2>&1; then
-  curl -fsSL https://cursor.com/install | bash
 fi
 
 exec "$@"
