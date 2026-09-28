@@ -45,7 +45,14 @@ if [[ $# -eq 0 ]]; then set -- zsh; fi
 image=schwinns-dev
 script_dir=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd -P)
 host_user=$(id -un)
-container_home=$host_workspace
+container_home="/home/$host_user"
+if [[ $workspace == "$host_workspace" ]]; then
+  container_workspace=$container_home
+elif [[ $workspace == "$host_workspace/"* ]]; then
+  container_workspace="$container_home/${workspace#"$host_workspace/"}"
+else
+  container_workspace=$workspace
+fi
 
 docker info >/dev/null
 if [[ $(uname -s) == Linux ]]; then
@@ -80,11 +87,14 @@ run_args=(
   --env "PI_CODING_AGENT_DIR=$host_home/.pi/agent"
   --env "CURSOR_CONFIG_DIR=$host_home/.cursor"
   --mount "type=bind,source=$host_workspace,target=$container_home"
-  --workdir "$workspace"
+  --workdir "$container_workspace"
 )
 if [[ ${#host_mounts[@]} -gt 0 ]]; then
   for host_mount in "${host_mounts[@]}"; do
     run_args+=(--mount "type=bind,source=$host_mount,target=$host_mount")
+    if [[ $host_home != "$container_home" && $host_mount == "$host_home/"* && $host_mount != "$host_workspace/"* ]]; then
+      run_args+=(--mount "type=bind,source=$host_mount,target=$container_home/${host_mount#"$host_home/"}")
+    fi
   done
 fi
 if [[ $workspace != "$host_workspace" && $workspace != "$host_workspace/"* ]]; then
@@ -100,11 +110,16 @@ fi
 for relative in .tsh .kube .codex .claude .pi .cursor .agents .config/gh .config/cursor; do
   if [[ -d "$host_home/$relative" ]]; then
     run_args+=(--mount "type=bind,source=$host_home/$relative,target=$container_home/$relative")
-    run_args+=(--mount "type=bind,source=$host_home/$relative,target=$host_home/$relative")
+    if [[ $host_home != "$container_home" ]]; then
+      run_args+=(--mount "type=bind,source=$host_home/$relative,target=$host_home/$relative")
+    fi
   fi
 done
 if [[ -f "$host_home/.claude.json" ]]; then
-  run_args+=(--mount "type=bind,source=$host_home/.claude.json,target=$host_home/.claude.json")
+  run_args+=(--mount "type=bind,source=$host_home/.claude.json,target=$container_home/.claude.json")
+  if [[ $host_home != "$container_home" ]]; then
+    run_args+=(--mount "type=bind,source=$host_home/.claude.json,target=$host_home/.claude.json")
+  fi
 fi
 
 # Cursor's desktop history is separate from its CLI state on macOS.
