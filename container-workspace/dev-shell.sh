@@ -24,6 +24,13 @@ done
 host_home=$HOME
 host_workspace="$host_home/workspace"
 mkdir -p "$host_workspace"
+mkdir -p "$host_home/.codex" "$host_home/.claude" "$host_home/.pi/agent" "$host_home/.cursor" "$host_home/.agents"
+if [[ -f "$host_home/.claude.json" && ! -e "$host_home/.claude/.claude.json" && ! -L "$host_home/.claude/.claude.json" ]]; then
+  ln -s ../.claude.json "$host_home/.claude/.claude.json"
+fi
+if [[ -f "$host_home/.claude.json" && ! -e "$host_workspace/.claude.json" && ! -L "$host_workspace/.claude.json" ]]; then
+  ln -s ../.claude.json "$host_workspace/.claude.json"
+fi
 workspace_arg=${1:-$host_workspace}
 if [[ $workspace_arg == -- ]]; then
   workspace_arg=$host_workspace
@@ -68,12 +75,18 @@ run_args=(
   --env "HOST_GID=$(id -g)"
   --env "DEV_GIT_NAME=$(git config --global user.name 2>/dev/null || true)"
   --env "DEV_GIT_EMAIL=$(git config --global user.email 2>/dev/null || true)"
+  --env "CODEX_HOME=$host_home/.codex"
+  --env "CLAUDE_CONFIG_DIR=$host_home/.claude"
+  --env "PI_CODING_AGENT_DIR=$host_home/.pi/agent"
+  --env "CURSOR_CONFIG_DIR=$host_home/.cursor"
   --mount "type=bind,source=$host_workspace,target=$container_home"
   --workdir "$workspace"
 )
-for host_mount in "${host_mounts[@]}"; do
-  run_args+=(--mount "type=bind,source=$host_mount,target=$host_mount")
-done
+if [[ ${#host_mounts[@]} -gt 0 ]]; then
+  for host_mount in "${host_mounts[@]}"; do
+    run_args+=(--mount "type=bind,source=$host_mount,target=$host_mount")
+  done
+fi
 if [[ $workspace != "$host_workspace" && $workspace != "$host_workspace/"* ]]; then
   run_args+=(--mount "type=bind,source=$workspace,target=$workspace")
 fi
@@ -83,12 +96,16 @@ else
   run_args+=(-i)
 fi
 
-# Share the complete state directories, including settings and conversation history.
-for relative in .tsh .kube .codex .claude .pi .cursor .config/gh .config/cursor; do
+# Share complete state at both the original host path and the container home.
+for relative in .tsh .kube .codex .claude .pi .cursor .agents .config/gh .config/cursor; do
   if [[ -d "$host_home/$relative" ]]; then
     run_args+=(--mount "type=bind,source=$host_home/$relative,target=$container_home/$relative")
+    run_args+=(--mount "type=bind,source=$host_home/$relative,target=$host_home/$relative")
   fi
 done
+if [[ -f "$host_home/.claude.json" ]]; then
+  run_args+=(--mount "type=bind,source=$host_home/.claude.json,target=$host_home/.claude.json")
+fi
 
 # Cursor's desktop history is separate from its CLI state on macOS.
 cursor_desktop_history="$host_home/Library/Application Support/Cursor/User/History"
