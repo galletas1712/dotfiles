@@ -23,7 +23,7 @@ done
 
 host_home=$HOME
 host_workspace="$host_home/workspace"
-mkdir -p "$host_workspace"
+mkdir -p "$host_workspace/.config"
 mkdir -p "$host_home/.codex" "$host_home/.claude" "$host_home/.pi/agent" "$host_home/.cursor" "$host_home/.agents"
 if [[ -f "$host_home/.claude.json" && ! -e "$host_home/.claude/.claude.json" && ! -L "$host_home/.claude/.claude.json" ]]; then
   ln -s ../.claude.json "$host_home/.claude/.claude.json"
