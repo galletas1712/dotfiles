@@ -106,9 +106,10 @@ else
   run_args+=(-i)
 fi
 
-# Share complete state at both the original host path and the container home.
-for relative in .tsh .kube .codex .claude .pi .cursor .agents .config/gh .config/cursor; do
+# Share login and agent state at both the original host path and container home.
+for relative in .tsh .kube .codex .claude .pi .cursor .agents .docker .azure .aws .ngc .config/gh .config/cursor .config/gcloud .config/az .config/ngc; do
   if [[ -d "$host_home/$relative" ]]; then
+    mkdir -p "$host_workspace/$relative"
     run_args+=(--mount "type=bind,source=$host_home/$relative,target=$container_home/$relative")
     if [[ $host_home != "$container_home" ]]; then
       run_args+=(--mount "type=bind,source=$host_home/$relative,target=$host_home/$relative")
