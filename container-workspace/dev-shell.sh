@@ -116,6 +116,18 @@ for relative in .tsh .kube .codex .claude .pi .cursor .agents .docker .azure .aw
     fi
   fi
 done
+# P4 stores its settings, ticket, and SSL trust in files under the host home.
+for relative in .p4config .p4enviro .p4tickets .p4trust; do
+  if [[ -f "$host_home/$relative" ]]; then
+    if [[ ! -e "$host_workspace/$relative" && ! -L "$host_workspace/$relative" ]]; then
+      (umask 077; : > "$host_workspace/$relative")
+    fi
+    run_args+=(--mount "type=bind,source=$host_home/$relative,target=$container_home/$relative")
+    if [[ $host_home != "$container_home" ]]; then
+      run_args+=(--mount "type=bind,source=$host_home/$relative,target=$host_home/$relative")
+    fi
+  fi
+done
 if [[ -f "$host_home/.claude.json" ]]; then
   run_args+=(--mount "type=bind,source=$host_home/.claude.json,target=$container_home/.claude.json")
   if [[ $host_home != "$container_home" ]]; then

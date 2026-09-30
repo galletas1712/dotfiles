@@ -34,6 +34,24 @@ RUN mkdir -p /etc/apt/keyrings && \
     rm -rf /var/lib/apt/lists/*
 
 ARG TARGETARCH
+# Download the newest available P4 CLI for this Linux architecture.
+RUN case "$TARGETARCH" in \
+      amd64) p4_arch=x86_64 ;; \
+      arm64) p4_arch=aarch64 ;; \
+      *) exit 1 ;; \
+    esac && \
+    p4_url=$(curl -fsSL https://ftp.perforce.com/perforce/ | \
+      sed -n 's/.*href="\(r[0-9][0-9]*\.[0-9][0-9]*\)\/".*/\1/p' | \
+      sort -Vr | \
+      while read -r release; do \
+        url="https://ftp.perforce.com/perforce/$release/bin.linux26${p4_arch}/p4"; \
+        if curl -fsSIL "$url" -o /dev/null; then printf '%s\n' "$url"; break; fi; \
+      done) && \
+    test -n "$p4_url" && \
+    curl -fsSL "$p4_url" -o /usr/local/bin/p4 && \
+    chmod +x /usr/local/bin/p4 && \
+    p4 -V >/dev/null
+
 RUN kubectl_version=$(curl -fsSL https://dl.k8s.io/release/stable.txt) && \
     curl -fsSL "https://dl.k8s.io/release/$kubectl_version/bin/linux/$TARGETARCH/kubectl" \
       -o /usr/local/bin/kubectl && \
