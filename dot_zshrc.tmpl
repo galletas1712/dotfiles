@@ -1,14 +1,19 @@
 export EDITOR=vim
-export PATH="$HOME/.local/bin:$HOME/.docker/bin:$HOME/snap/bin:$PATH"
+# Use image executables when the host home is shared with a Linux container.
+if [[ ${DEV_CONTAINER:-} == 1 ]]; then
+  export PATH="/usr/local/bin:/usr/local/go/bin:/usr/local/sbin:/usr/sbin:/usr/bin:/sbin:/bin"
+else
+  export PATH="$HOME/.local/bin:$HOME/.docker/bin:$HOME/snap/bin:$PATH"
 
-# Make Homebrew tools available in the shell.
-for brew_bin in /opt/homebrew/bin/brew /usr/local/bin/brew /home/linuxbrew/.linuxbrew/bin/brew; do
-  if [ -x "$brew_bin" ]; then
-    eval "$("$brew_bin" shellenv)"
-    break
-  fi
-done
-export PATH="$HOME/.local/bin:$PATH"
+  # Make Homebrew tools available in the shell.
+  for brew_bin in /opt/homebrew/bin/brew /usr/local/bin/brew /home/linuxbrew/.linuxbrew/bin/brew; do
+    if [ -x "$brew_bin" ]; then
+      eval "$("$brew_bin" shellenv)"
+      break
+    fi
+  done
+  export PATH="$HOME/.local/bin:$PATH"
+fi
 
 autoload -Uz compinit
 compinit
@@ -27,11 +32,6 @@ alias za="zmx attach"
 alias zl="zmx list"
 alias zk="zmx kill"
 
-if [ -r "$HOME/.zshrc.local" ]; then
+if [[ ${DEV_CONTAINER:-} != 1 && -r "$HOME/.zshrc.local" ]]; then
   source "$HOME/.zshrc.local"
-fi
-
-# Shared host dotfiles must prefer the container's Linux executables.
-if [[ ${DEV_CONTAINER:-} == 1 ]]; then
-  export PATH="/usr/local/bin:/usr/local/go/bin:/usr/bin:/bin:$PATH"
 fi
