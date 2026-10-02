@@ -23,14 +23,7 @@ done
 
 host_home=$HOME
 host_workspace="$host_home/workspace"
-mkdir -p "$host_workspace/.config"
-mkdir -p "$host_home/.codex" "$host_home/.claude" "$host_home/.pi/agent" "$host_home/.cursor" "$host_home/.agents"
-if [[ -f "$host_home/.claude.json" && ! -e "$host_home/.claude/.claude.json" && ! -L "$host_home/.claude/.claude.json" ]]; then
-  ln -s ../.claude.json "$host_home/.claude/.claude.json"
-fi
-if [[ -f "$host_home/.claude.json" && ! -e "$host_workspace/.claude.json" && ! -L "$host_workspace/.claude.json" ]]; then
-  ln -s ../.claude.json "$host_workspace/.claude.json"
-fi
+mkdir -p "$host_workspace"
 workspace_arg=${1:-$host_workspace}
 if [[ $workspace_arg == -- ]]; then
   workspace_arg=$host_workspace
@@ -45,14 +38,7 @@ if [[ $# -eq 0 ]]; then set -- zsh; fi
 image=schwinns-dev
 script_dir=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd -P)
 host_user=$(id -un)
-container_home="/home/$host_user"
-if [[ $workspace == "$host_workspace" ]]; then
-  container_workspace=$container_home
-elif [[ $workspace == "$host_workspace/"* ]]; then
-  container_workspace="$container_home/${workspace#"$host_workspace/"}"
-else
-  container_workspace=$workspace
-fi
+container_home=$host_home
 
 docker info >/dev/null
 if [[ $(uname -s) == Linux ]]; then
@@ -80,66 +66,23 @@ run_args=(
   --env "HOST_USER=$host_user"
   --env "HOST_UID=$(id -u)"
   --env "HOST_GID=$(id -g)"
-  --env "DEV_GIT_NAME=$(git config --global user.name 2>/dev/null || true)"
-  --env "DEV_GIT_EMAIL=$(git config --global user.email 2>/dev/null || true)"
-  --env "CODEX_HOME=$host_home/.codex"
-  --env "CLAUDE_CONFIG_DIR=$host_home/.claude"
-  --env "PI_CODING_AGENT_DIR=$host_home/.pi/agent"
-  --env "CURSOR_CONFIG_DIR=$host_home/.cursor"
-  --mount "type=bind,source=$host_workspace,target=$container_home"
-  --workdir "$container_workspace"
+  --env DEV_CONTAINER=1
+  --mount "type=bind,source=$host_home,target=$container_home"
+  --workdir "$workspace"
 )
 if [[ ${#host_mounts[@]} -gt 0 ]]; then
   for host_mount in "${host_mounts[@]}"; do
     run_args+=(--mount "type=bind,source=$host_mount,target=$host_mount")
-    if [[ $host_home != "$container_home" && $host_mount == "$host_home/"* && $host_mount != "$host_workspace/"* ]]; then
-      run_args+=(--mount "type=bind,source=$host_mount,target=$container_home/${host_mount#"$host_home/"}")
-    fi
+
   done
 fi
-if [[ $workspace != "$host_workspace" && $workspace != "$host_workspace/"* ]]; then
+if [[ $workspace != "$host_home" && $workspace != "$host_home/"* ]]; then
   run_args+=(--mount "type=bind,source=$workspace,target=$workspace")
 fi
 if [[ -t 0 && -t 1 ]]; then
   run_args+=(-it)
 else
   run_args+=(-i)
-fi
-
-# Share login and agent state at both the original host path and container home.
-for relative in .tsh .kube .codex .claude .pi .cursor .agents .docker .azure .aws .ngc .config/gh .config/cursor .config/gcloud .config/az .config/ngc; do
-  if [[ -d "$host_home/$relative" ]]; then
-    mkdir -p "$host_workspace/$relative"
-    run_args+=(--mount "type=bind,source=$host_home/$relative,target=$container_home/$relative")
-    if [[ $host_home != "$container_home" ]]; then
-      run_args+=(--mount "type=bind,source=$host_home/$relative,target=$host_home/$relative")
-    fi
-  fi
-done
-# P4 stores its settings, ticket, and SSL trust in files under the host home.
-for relative in .p4config .p4enviro .p4tickets .p4trust; do
-  if [[ -f "$host_home/$relative" ]]; then
-    if [[ ! -e "$host_workspace/$relative" && ! -L "$host_workspace/$relative" ]]; then
-      (umask 077; : > "$host_workspace/$relative")
-    fi
-    run_args+=(--mount "type=bind,source=$host_home/$relative,target=$container_home/$relative")
-    if [[ $host_home != "$container_home" ]]; then
-      run_args+=(--mount "type=bind,source=$host_home/$relative,target=$host_home/$relative")
-    fi
-  fi
-done
-if [[ -f "$host_home/.claude.json" ]]; then
-  run_args+=(--mount "type=bind,source=$host_home/.claude.json,target=$container_home/.claude.json")
-  if [[ $host_home != "$container_home" ]]; then
-    run_args+=(--mount "type=bind,source=$host_home/.claude.json,target=$host_home/.claude.json")
-  fi
-fi
-
-# Cursor's desktop history is separate from its CLI state on macOS.
-cursor_desktop_history="$host_home/Library/Application Support/Cursor/User/History"
-if [[ -d $cursor_desktop_history ]]; then
-  mkdir -p "$host_workspace/.config/Cursor/User"
-  run_args+=(--mount "type=bind,source=$cursor_desktop_history,target=$container_home/.config/Cursor/User/History,readonly")
 fi
 
 if $enable_docker; then

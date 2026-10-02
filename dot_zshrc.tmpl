@@ -30,3 +30,8 @@ alias zk="zmx kill"
 if [ -r "$HOME/.zshrc.local" ]; then
   source "$HOME/.zshrc.local"
 fi
+
+# Shared host dotfiles must prefer the container's Linux executables.
+if [[ ${DEV_CONTAINER:-} == 1 ]]; then
+  export PATH="/usr/local/bin:/usr/local/go/bin:/usr/bin:/bin:$PATH"
+fi

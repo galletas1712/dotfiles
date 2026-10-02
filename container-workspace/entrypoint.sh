@@ -22,17 +22,7 @@ if [ "$(id -u)" -eq 0 ]; then
   exec gosu "$HOST_USER" "$0" "$@"
 fi
 
-export PATH="/usr/local/bin:$HOME/.local/bin:$PATH"
-
-if [ -n "${DEV_GIT_NAME:-}" ] && ! git config --global user.name >/dev/null 2>&1; then
-  git config --global user.name "$DEV_GIT_NAME"
-fi
-if [ -n "${DEV_GIT_EMAIL:-}" ] && ! git config --global user.email >/dev/null 2>&1; then
-  git config --global user.email "$DEV_GIT_EMAIL"
-fi
-if [ -d "$HOME/.config/gh" ]; then
-  git config --global credential.https://github.com.helper '!gh auth git-credential'
-  git config --global credential.https://gist.github.com.helper '!gh auth git-credential'
-fi
+# Prefer Linux tools from the image over binaries in the shared host home.
+export PATH="/usr/local/bin:/usr/local/go/bin:$PATH"
 
 exec "$@"
