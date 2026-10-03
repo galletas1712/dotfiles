@@ -84,6 +84,18 @@ RUN mkdir -p /opt/cursor-agent-home && \
     ln -s /opt/cursor-agent-home/.local/bin/agent /usr/local/bin/agent && \
     rm /tmp/install-cursor.sh
 
+RUN curl -fsSL https://starship.rs/install.sh -o /tmp/install-starship.sh && \
+    sh /tmp/install-starship.sh --yes --bin-dir /usr/local/bin && \
+    rm /tmp/install-starship.sh
+
+RUN zmx_url=$(curl -fsSL https://api.github.com/repos/neurosnap/zmx/releases/latest | \
+      jq -er --arg suffix "-linux-$(uname -m).tar.gz" \
+        '.assets[] | select(.name | endswith($suffix)) | .browser_download_url') && \
+    curl -fsSL "$zmx_url" -o /tmp/zmx.tar.gz && \
+    tar -xzf /tmp/zmx.tar.gz -C /usr/local/bin zmx && \
+    rm /tmp/zmx.tar.gz
+
+ENV SHELL=/bin/zsh
 WORKDIR /workspace
 COPY --chmod=0755 entrypoint.sh /usr/local/bin/dev-entrypoint
 ENTRYPOINT ["dev-entrypoint"]

@@ -1,6 +1,7 @@
 export EDITOR=vim
 # Use image executables when the host home is shared with a Linux container.
 if [[ ${DEV_CONTAINER:-} == 1 ]]; then
+  export SHELL=/bin/zsh
   export PATH="/usr/local/bin:/usr/local/go/bin:/usr/local/sbin:/usr/sbin:/usr/bin:/sbin:/bin"
 else
   export PATH="$HOME/.local/bin:$HOME/.docker/bin:$HOME/snap/bin:$PATH"
