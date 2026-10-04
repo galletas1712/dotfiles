@@ -95,7 +95,7 @@ RUN zmx_url=$(curl -fsSL https://api.github.com/repos/neurosnap/zmx/releases/lat
     tar -xzf /tmp/zmx.tar.gz -C /usr/local/bin zmx && \
     rm /tmp/zmx.tar.gz
 
-ENV SHELL=/bin/zsh
+ENV SHELL=/bin/zsh LANG=C.UTF-8
 WORKDIR /workspace
 COPY --chmod=0755 entrypoint.sh /usr/local/bin/dev-entrypoint
 ENTRYPOINT ["dev-entrypoint"]
