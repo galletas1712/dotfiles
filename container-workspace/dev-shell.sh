@@ -41,6 +41,14 @@ host_user=$(id -un)
 container_home=$host_home
 
 docker info >/dev/null
+# BB is a persistent service. Explicit commands such as zsh remain disposable.
+service=false
+if [[ $1 == bb-session ]]; then
+  service=true
+  if docker container inspect "$image" >/dev/null 2>&1; then
+    exec docker start "$image"
+  fi
+fi
 if [[ $(uname -s) == Linux ]]; then
   # Leave room for project files and temporary Docker build layers on Odin.
   min_free_gib=20
@@ -58,7 +66,7 @@ docker build --pull --quiet \
   --tag "$image" "$script_dir"
 
 run_args=(
-  run --rm --init
+  run --init
   --network host
   --env "HOME=$container_home"
   --env "USER=$host_user"
@@ -79,10 +87,11 @@ fi
 if [[ $workspace != "$host_home" && $workspace != "$host_home/"* ]]; then
   run_args+=(--mount "type=bind,source=$workspace,target=$workspace")
 fi
-if [[ -t 0 && -t 1 ]]; then
-  run_args+=(-it)
+if $service; then
+  run_args+=(-d --name "$image" --restart unless-stopped)
 else
-  run_args+=(-i)
+  run_args+=(--rm -i)
+  if [[ -t 0 && -t 1 ]]; then run_args+=(-t); fi
 fi
 
 if $enable_docker; then

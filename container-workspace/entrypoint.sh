@@ -5,8 +5,10 @@ if [ "$(id -u)" -eq 0 ]; then
   if ! getent group "$HOST_GID" >/dev/null; then
     groupadd --gid "$HOST_GID" "$HOST_USER"
   fi
-  useradd --uid "$HOST_UID" --gid "$HOST_GID" --groups sudo \
-    --no-create-home --home-dir "$HOME" --shell /bin/zsh "$HOST_USER"
+  if ! id "$HOST_USER" >/dev/null 2>&1; then
+    useradd --uid "$HOST_UID" --gid "$HOST_GID" --groups sudo \
+      --no-create-home --home-dir "$HOME" --shell /bin/zsh "$HOST_USER"
+  fi
   printf '%s ALL=(ALL) NOPASSWD:ALL\n' "$HOST_USER" > /etc/sudoers.d/dev-user
   chmod 0440 /etc/sudoers.d/dev-user
 

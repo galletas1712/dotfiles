@@ -25,3 +25,17 @@ The image follows current releases, checks base images on each launch, and refre
 On macOS, sharing Docker configuration does not make the macOS Keychain helper executable in Linux. Registry authentication that depends on that helper requires a Linux-compatible credential arrangement. Cloud credentials are shared, but their CLIs are not installed solely for that reason. Cursor desktop history remains available at its original host path; sharing it does not convert it into Linux Cursor desktop history.
 
 The launcher refuses a Linux build when either the workspace or Docker filesystem has less than 20 GiB free; that is a startup check, not a limit on files written during a session. Daily refreshes can accumulate Docker build cache over time; the launcher does not run a global Docker prune, which could remove unrelated caches or images.
+
+## Container lifecycle
+
+BB runs detached in a persistent container named `schwinns-dev`. Docker restarts it after a daemon restart or unexpected exit, unless you explicitly stop it. No host zmx session or background launcher is needed.
+
+```sh
+docker stop schwinns-dev
+docker start schwinns-dev
+docker restart schwinns-dev
+docker logs --tail 50 schwinns-dev
+dev-enter zmx attach bb
+```
+
+The launcher starts an existing container without rebuilding it. To refresh packages and replace the container, run `docker stop schwinns-dev`, then `docker rm schwinns-dev`, then run the launcher again (on Odin: `bash ~/workspace/start-bb.sh`). Host home files persist; container-local processes and changes do not. Explicit launcher commands such as `-- zsh` still run as disposable interactive containers.
