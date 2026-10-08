@@ -34,7 +34,7 @@ workspace=$(cd "$workspace_arg" && pwd -L)
 if [[ ${1:-} == -- ]]; then
   shift
 fi
-if [[ $# -eq 0 ]]; then set -- zsh; fi
+if [[ $# -eq 0 ]]; then set -- bb-session; fi
 image=schwinns-dev
 script_dir=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd -P)
 host_user=$(id -un)

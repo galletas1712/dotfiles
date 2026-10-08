@@ -100,4 +100,4 @@ WORKDIR /workspace
 COPY --chmod=0755 entrypoint.sh /usr/local/bin/dev-entrypoint
 COPY --chmod=0755 bb-session.sh /usr/local/bin/bb-session
 ENTRYPOINT ["dev-entrypoint"]
-CMD ["zsh"]
+CMD ["bb-session"]
