@@ -14,6 +14,10 @@ Run `bash dev-shell.sh` to start in `~/workspace`, or pass an absolute project p
 
 The entire host home is mounted read-write at its original absolute path, which is also the container user's home. Projects, dotfiles, credentials, agent histories, and BB data are shared automatically. Existing symlinks within the home keep working. Use `--mount-host /absolute/path` for symlink targets or other data outside the home. A selected project outside the home is mounted automatically at the same path.
 
+After applying chezmoi, `dev-enter` opens an interactive zsh in the existing dev container. It also accepts a command, such as `dev-enter zmx list` or `dev-enter zmx attach work`. It does not rebuild or restart anything. If multiple dev containers are running, select one with `DEV_CONTAINER_ID=<id> dev-enter`.
+
+On Odin, `zmx attach bb` on the host reaches the BB console. Use zmx inside the container for manually started shells, development servers, port forwards, or long-running commands that need an interactive console. BB manages its own agent workers; interact with those through BB. zmx preserves sessions across terminal disconnects, but processes inside a container still end when the container stops.
+
 The container creates a user with the host username and numeric IDs, with passwordless sudo. Image tools are installed under `/usr/local` and `/opt`, never into the mounted home. Container startup does not install packages into the home or rewrite Git configuration. Applications may still write their normal settings, histories, caches, and project dependencies to the shared home. The shared zsh configuration gives image executables precedence over host binaries.
 
 The image follows current releases, checks base images on each launch, and refreshes package installation daily. This is a repeatable setup rather than a version-locked build. Runtime caches and host configuration also remain mutable.

@@ -1,0 +1,30 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# Enter the existing dev container without building or restarting it.
+container=${DEV_CONTAINER_ID:-}
+if [[ -z $container ]]; then
+  candidates=()
+  while read -r id; do
+    [[ -n $id ]] || continue
+    image=$(docker inspect --format '{{.Config.Image}}' "$id")
+    if [[ $image == schwinns-dev || $image == schwinns-dev:latest ]]; then
+      candidates+=("$id")
+    fi
+  done < <(docker ps -q)
+  if [[ ${#candidates[@]} != 1 ]]; then
+    echo "Expected one running dev container; found ${#candidates[@]}." >&2
+    echo 'Use DEV_CONTAINER_ID=<id> dev-enter to select one.' >&2
+    exit 1
+  fi
+  container=${candidates[0]}
+fi
+
+directory=$HOME
+if [[ $PWD == "$HOME" || $PWD == "$HOME/"* ]]; then
+  directory=$PWD
+fi
+args=(exec -i --user "$(id -u)" --workdir "$directory")
+if [[ -t 0 && -t 1 ]]; then args+=(-t); fi
+if [[ $# == 0 ]]; then set -- zsh -i; fi
+exec docker "${args[@]}" "$container" "$@"
